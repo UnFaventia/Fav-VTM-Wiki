@@ -1,0 +1,103 @@
+# Builds Fav's VTM wiki from the private VTM-V5 repo and publishes it to GitHub Pages.
+#
+# No book text is ever committed here: the workflow checks VTM-V5 out into the runner,
+# builds the site, and hands it to Pages as an artifact.
+#
+# Runs when: VTM-V5 changes (its notify-wiki workflow sends a ping), this repo changes,
+# someone presses "Run workflow" on the Actions tab, and nightly as a safety net.
+#
+# Needs the repo secret WIKI_TOKEN: a fine-grained token with Contents: read on VTM-V5
+# (and Contents: read-and-write on this repo, so VTM-V5 can send its ping with it).
+name: Build the wiki
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [vtm-v5-updated]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 17 * * *" # 3:17 am Brisbane
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  QUARTZ_VERSION: v4.5.2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the token is set
+        env:
+          TOKEN: ${{ secrets.WIKI_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::The WIKI_TOKEN secret isn't set yet, so the build can't read VTM-V5. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Get this repo (the build recipe)
+        uses: actions/checkout@v4
+        with:
+          path: recipe
+
+      - name: Get VTM-V5 (the content)
+        uses: actions/checkout@v4
+        with:
+          repository: UnFaventia/VTM-V5
+          token: ${{ secrets.WIKI_TOKEN }}
+          path: vtm-v5
+
+      - name: Get Quartz
+        run: git clone --depth 1 --branch "$QUARTZ_VERSION" https://github.com/jackyzha0/quartz.git quartz
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: quartz/package-lock.json
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          npm ci --prefix quartz --no-audit --no-fund
+          pip install --quiet pyyaml
+
+      - name: Turn the hub into wiki pages
+        run: |
+          cp -r recipe/quartz-overrides/. quartz/
+          python3 recipe/scripts/prepare.py vtm-v5 quartz/content
+
+      - name: Build
+        working-directory: quartz
+        run: npx quartz build
+
+      - name: Keep search engines out
+        run: |
+          find quartz/public -name '*.html' -exec sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow, noarchive">|' {} +
+          touch quartz/public/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: quartz/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

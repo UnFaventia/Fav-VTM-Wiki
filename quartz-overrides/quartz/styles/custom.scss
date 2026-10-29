@@ -1,0 +1,26 @@
+@use "./base.scss";
+
+// Tables carry most of the hub's quick-reference data; on a phone they scroll sideways
+// instead of squashing. Slightly larger body text for comfortable couch reading.
+article {
+  font-size: 1.05rem;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table th {
+  color: var(--secondary);
+}
+
+blockquote {
+  border-left-color: var(--secondary);
+}
+
+// The "At a glance" box takes the site's blood-red rather than Quartz's default blue.
+.callout[data-callout="abstract"] {
+  --color: var(--secondary);
+  --border: var(--secondary);
+  --bg: var(--highlight);
+}
