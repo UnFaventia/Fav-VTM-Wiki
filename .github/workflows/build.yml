@@ -83,9 +83,9 @@ jobs:
         working-directory: quartz
         run: npx quartz build
 
-      - name: Keep search engines out
+      - name: Keep search engines out; add the home-screen icon and phone toolbar colour
         run: |
-          find quartz/public -name '*.html' -exec sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow, noarchive">|' {} +
+          find quartz/public -name '*.html' -exec sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow, noarchive"><link rel="apple-touch-icon" href="/Fav-VTM-Wiki/static/icon.png"><meta name="theme-color" content="#141113">|' {} +
           touch quartz/public/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3

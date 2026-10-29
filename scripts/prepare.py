@@ -11,7 +11,8 @@ What it does, file by file (the hub itself is never changed; this works on a cop
   * gives every page a title (its frontmatter `name`, else its first heading) and drops
     that first heading from the body, since Quartz prints the title itself;
   * adds an "At a glance" box under the title from the frontmatter: what the entry is,
-    which books it comes from, and other names it goes by.
+    which books it comes from, and other names it goes by;
+  * uses the entry's `what` as the page description (shown in search and link previews).
 """
 import json
 import os
@@ -109,6 +110,9 @@ def convert(text, rel_dir="."):
     header = raw_meta if raw_meta is not None else ""
     if title and "title" not in meta:
         header = f"title: {json.dumps(str(title), ensure_ascii=False)}\n" + header
+    # The page's search/link-preview description is its `what`, not the glance box text.
+    if meta.get("what") and "description" not in meta:
+        header = f"description: {json.dumps(str(meta['what']), ensure_ascii=False)}\n" + header
     if header.strip():
         return f"---\n{header.rstrip()}\n---\n\n{body}"
     return body

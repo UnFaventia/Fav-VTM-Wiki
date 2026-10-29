@@ -19,4 +19,5 @@ The site is unlisted, not locked: search engines are told to stay out, but anyon
 | --- | --- |
 | `.github/workflows/build.yml` | The build and publish run |
 | `scripts/prepare.py` | Hub → wiki page converter |
-| `quartz-overrides/` | Files copied over Quartz before the build: site config (title, colours, fonts), page layout, extra styling |
+| `quartz-overrides/` | Files copied over Quartz before the build: site config (title, colours, fonts), page layout, extra styling, and the icon and link-preview image |
+| `scripts/make_icons.py` | Draws the blood-drop icon and the link-preview image (run once; the PNGs are committed) |
