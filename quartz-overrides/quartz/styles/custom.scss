@@ -1,26 +1,633 @@
 @use "./base.scss";
+@use "./variables.scss" as *;
 
-// Tables carry most of the hub's quick-reference data; on a phone they scroll sideways
-// instead of squashing. Slightly larger body text for comfortable couch reading.
-article {
-  font-size: 1.05rem;
+// ─────────────────────────────────────────────────────────────────────────────
+// Art deco × retro SchreckNet (Fav, 2026-10-31).
+//
+// The deco is the frame: brass, onyx, Limelight titles, double rules, the fan under each
+// title. SchreckNet is the machine wired into it: the dark screens with phosphor text
+// (the section switch, the search, code), in VT323. The phosphor is the section: blood
+// red for VTM V5, green for Australia WoD, so with the brass it reads green and gold.
+// Body text stays plain and large for long reading on a phone.
+// ─────────────────────────────────────────────────────────────────────────────
+
+:root {
+  --brass: #835f1c;
+  --brass-soft: #a98443;
+  --panel: #e7dfcd;
+  --screen: #12140f;
+  --screen-ink: #cfc7b2;
+  --phosphor: #f2585c; // on a screen, in both modes: screens are dark in daylight too
+  --phosphor-glow: rgba(242, 88, 92, 0.55);
 }
+
+:root[saved-theme="dark"] {
+  --brass: #d2ac62;
+  --brass-soft: #a88a4f;
+  --panel: #1b1814;
+  --screen: #0b0c09;
+}
+
+html:root[data-section="wod"] {
+  --secondary: #1b6641;
+  --highlight: rgba(27, 102, 65, 0.07);
+  --phosphor: #86dc8f;
+  --phosphor-glow: rgba(134, 220, 143, 0.5);
+}
+
+html:root[saved-theme="dark"][data-section="wod"] {
+  --secondary: #86dc8f;
+  --highlight: rgba(134, 220, 143, 0.09);
+}
+
+// The frame motif: brass corner brackets, used on the switch, the "At a glance" box and
+// the search. One mixin so every bracket is the same size.
+@mixin brackets($size: 14px, $weight: 2px, $color: var(--brass)) {
+  background-image:
+    linear-gradient($color, $color), linear-gradient($color, $color),
+    linear-gradient($color, $color), linear-gradient($color, $color),
+    linear-gradient($color, $color), linear-gradient($color, $color),
+    linear-gradient($color, $color), linear-gradient($color, $color);
+  background-repeat: no-repeat;
+  background-size:
+    $size $weight, $weight $size, $size $weight, $weight $size,
+    $size $weight, $weight $size, $size $weight, $weight $size;
+  background-position:
+    top left, top left, top right, top right,
+    bottom left, bottom left, bottom right, bottom right;
+}
+
+@mixin scanlines($strength: 0.22) {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, $strength) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+// ── Reading ──────────────────────────────────────────────────────────────────
+
+body {
+  font-optical-sizing: auto;
+}
+
+article {
+  font-size: 1.08rem;
+  line-height: 1.75;
+
+  p,
+  li {
+    line-height: 1.75;
+  }
+}
+
+article li::marker {
+  color: var(--brass);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--secondary) 30%, transparent);
+}
+
+// ── Titles: the deco marquee ─────────────────────────────────────────────────
+
+.page-title {
+  font-size: 1.85rem;
+
+  @media all and ($mobile) {
+    font-size: 1.45rem;
+  }
+
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  margin: 0;
+
+  a {
+    color: var(--brass);
+    font-weight: 400;
+  }
+}
+
+h1.article-title {
+  font-family: var(--titleFont);
+  font-weight: 400;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 2.9rem);
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  color: var(--dark);
+  text-align: center;
+  text-wrap: balance;
+  margin: 1.5rem 0 0.5rem;
+
+  // The fan: a deco sunburst on a double rule, drawn as a mask so it takes the brass.
+  &::after {
+    content: "";
+    display: block;
+    height: 26px;
+    margin: 0.9rem auto 0;
+    max-width: 22rem;
+    background-color: var(--brass);
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 352 26'><g fill='none' stroke='black' stroke-width='1.4'><path d='M0 20.5H150M0 24.5H146M202 20.5H352M206 24.5H352'/><path d='M150 24.5a26 26 0 0 1 52 0' /><path d='M176 24.5V2M176 24.5L165 4.5M176 24.5L187 4.5M176 24.5L156.6 10M176 24.5L195.4 10M176 24.5L152 18M176 24.5L200 18'/></g></svg>")
+      center / contain no-repeat;
+  }
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--headerFont);
+  color: var(--dark);
+}
+
+article h2 {
+  font-weight: 500;
+  font-size: 1.22rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 3px double color-mix(in srgb, var(--brass) 55%, transparent);
+}
+
+article h3 {
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: 0.01em;
+  margin-top: 2rem;
+}
+
+article h4 {
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+
+// ── Links ────────────────────────────────────────────────────────────────────
+
+a {
+  font-weight: 500;
+}
+
+article a,
+.popover a {
+  color: var(--secondary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: color-mix(in srgb, var(--brass) 55%, transparent);
+
+  &:hover {
+    color: var(--secondary);
+    text-decoration-color: currentColor;
+  }
+
+  &.internal {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+  }
+}
+
+// ── Tables: the quick-reference workhorse ────────────────────────────────────
 
 .table-container {
   overflow-x: auto;
 }
 
-table th {
-  color: var(--secondary);
+table {
+  border-collapse: collapse;
+
+  th {
+    font-family: var(--headerFont);
+    font-weight: 500;
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brass);
+    text-align: left;
+    padding: 0.55rem 1rem;
+    border-bottom: 3px double var(--brass);
+  }
+
+  td {
+    padding: 0.55rem 1rem;
+    line-height: 1.55;
+    vertical-align: top;
+  }
+
+  tr {
+    border-bottom: 1px solid var(--lightgray);
+  }
+
+  tbody tr:last-child {
+    border-bottom: 1px solid var(--brass-soft);
+  }
 }
+
+// ── Quotes, rules, notes ─────────────────────────────────────────────────────
 
 blockquote {
-  border-left-color: var(--secondary);
+  border-left: 3px double var(--brass);
+  margin-left: 0;
+  padding-left: 1.1rem;
 }
 
-// The "At a glance" box takes the site's blood-red rather than Quartz's default blue.
+hr {
+  border: 0;
+  height: 14px;
+  margin: 2.5rem auto;
+  max-width: 18rem;
+  background-color: var(--brass);
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 288 14'><g fill='none' stroke='black' stroke-width='1.2'><path d='M0 5.5H128M0 8.5H128M160 5.5H288M160 8.5H288'/><path d='M144 1L150 7L144 13L138 7Z'/><path d='M133 7h2M153 7h2'/></g></svg>")
+    center / contain no-repeat;
+}
+
+// Fav's [[sticky notes]], as written, marked as hers rather than the book's.
+.sticky-note {
+  background: color-mix(in srgb, var(--brass) 18%, transparent);
+  border-bottom: 1px dashed var(--brass);
+  padding: 0 0.25em;
+  font-family: var(--headerFont);
+  font-size: 0.92em;
+}
+
+// ── Code: the terminal ───────────────────────────────────────────────────────
+
+code {
+  font-family: var(--codeFont);
+  font-size: 1.22em;
+  line-height: 1;
+  padding: 0.05em 0.3em;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--gray) 14%, transparent);
+  color: var(--dark);
+}
+
+pre {
+  background: var(--screen) !important;
+  border: 1px solid var(--lightgray);
+  border-radius: 0;
+  position: relative;
+
+  code,
+  code span {
+    font-size: 1.18rem;
+    background: none;
+    color: var(--phosphor) !important;
+    text-shadow: 0 0 6px var(--phosphor-glow);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    @include scanlines(0.28);
+  }
+}
+
+// ── "At a glance": the dossier card ──────────────────────────────────────────
+
 .callout[data-callout="abstract"] {
-  --color: var(--secondary);
-  --border: var(--secondary);
-  --bg: var(--highlight);
+  --color: var(--brass);
+  --border: transparent;
+  --bg: var(--panel);
+  border: 0;
+  border-radius: 0;
+  background-color: var(--panel);
+  @include brackets(14px, 2px);
+  padding: 0.9rem 1.25rem 0.6rem;
+
+  .callout-icon {
+    display: none;
+  }
+
+  .callout-title {
+    padding: 0;
+  }
+
+  .callout-title-inner > p {
+    font-family: var(--codeFont);
+    font-size: 1.3rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--brass);
+
+    &::before {
+      content: "> ";
+      color: var(--secondary);
+    }
+  }
+
+  .callout-content > p {
+    margin: 0.35rem 0;
+  }
+}
+
+// ── Sidebar: the directory ───────────────────────────────────────────────────
+
+.explorer {
+  .title-button h2 {
+    font-family: var(--headerFont);
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+
+  .fold {
+    color: var(--brass);
+  }
+
+  .explorer-content ul li > a,
+  .folder-container .folder-title,
+  .folder-container a.folder-title {
+    font-family: var(--headerFont);
+    font-size: 0.98rem;
+    color: var(--darkgray);
+    opacity: 1;
+  }
+
+  .folder-container .folder-title,
+  .folder-container a.folder-title {
+    font-weight: 500;
+    color: var(--dark);
+  }
+
+  .folder-icon {
+    color: var(--brass);
+  }
+
+  .explorer-content ul li > a {
+    font-weight: 400;
+  }
+
+  .explorer-content ul li > a.active {
+    color: var(--secondary);
+    font-weight: 500;
+
+    &::before {
+      content: "▸ ";
+    }
+  }
+
+  .explorer-content ul li > a:hover,
+  .folder-container a.folder-title:hover {
+    color: var(--secondary);
+  }
+}
+
+// ── Breadcrumbs ──────────────────────────────────────────────────────────────
+
+.breadcrumb-container {
+  font-family: var(--headerFont);
+  font-size: 0.9rem;
+
+  .breadcrumb-element {
+    a {
+      color: var(--gray);
+      font-weight: 400;
+
+      &:hover {
+        color: var(--secondary);
+      }
+    }
+
+    p {
+      color: var(--brass);
+    }
+  }
+}
+
+// In Australia WoD, "Home" would lead back to VTM V5's homepage; the switch does that.
+html[data-section="wod"] .breadcrumb-container > .breadcrumb-element:first-child {
+  display: none;
+}
+
+// ── Right column ─────────────────────────────────────────────────────────────
+
+.right h3,
+.graph > h3,
+.toc-header h3,
+.backlinks > h3 {
+  font-family: var(--headerFont);
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+.graph > .graph-outer {
+  border-radius: 0;
+  border-color: var(--lightgray);
+  background: var(--panel);
+}
+
+.toc-content a,
+.backlinks a {
+  font-family: var(--headerFont);
+}
+
+// ── Buttons in the top bar ───────────────────────────────────────────────────
+
+.darkmode svg,
+.readermode svg,
+.explorer-toggle svg {
+  color: var(--brass);
+  fill: var(--brass);
+  stroke: var(--brass);
+}
+
+// ── Search: a SchreckNet terminal ────────────────────────────────────────────
+
+.search {
+  .search-button {
+    border-radius: 0;
+    border: 1px solid var(--lightgray);
+    background: var(--screen);
+    font-family: var(--codeFont);
+
+    p {
+      font-family: var(--codeFont);
+      font-size: 1.25rem;
+      white-space: nowrap;
+      color: var(--screen-ink);
+      opacity: 0.75;
+
+      &::before {
+        content: "> ";
+        color: var(--phosphor);
+        opacity: 1;
+      }
+
+      // The block cursor marks the one place on the page you can type. It holds
+      // still: a blink beside the text you're reading only pulls the eye.
+      &::after {
+        content: "";
+        display: inline-block;
+        width: 0.5em;
+        height: 0.9em;
+        margin-left: 0.15em;
+        vertical-align: -0.08em;
+        background: var(--phosphor);
+        opacity: 0.85;
+      }
+    }
+
+    & svg .search-path {
+      stroke: var(--phosphor);
+    }
+  }
+
+  .search-container {
+    background: color-mix(in srgb, var(--light) 70%, transparent);
+    backdrop-filter: blur(6px);
+
+    .search-space {
+      border-radius: 0;
+      background-color: var(--panel);
+      box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.45);
+      @include brackets(18px, 2px);
+      padding: 1.25rem;
+
+      .search-bar {
+        margin-bottom: 0.9rem;
+        font-family: var(--codeFont);
+        font-size: 1.6rem;
+        border-radius: 0;
+        border: 1px solid var(--lightgray);
+        background: var(--screen);
+        color: var(--phosphor);
+        caret-color: var(--phosphor);
+        text-shadow: 0 0 6px var(--phosphor-glow);
+        padding: 0.45rem 0.9rem;
+
+        &::placeholder {
+          color: var(--screen-ink);
+          opacity: 0.5;
+          text-shadow: none;
+        }
+
+        &:focus {
+          outline: 1px solid var(--phosphor);
+          outline-offset: 2px;
+        }
+      }
+
+      .search-layout {
+        border-color: var(--lightgray);
+        border-radius: 0;
+
+        .result-card {
+          border-radius: 0;
+
+          h3 {
+            font-family: var(--headerFont);
+            font-weight: 500;
+            letter-spacing: 0.01em;
+          }
+
+          p {
+            font-family: var(--bodyFont);
+          }
+
+          &:hover,
+          &:focus,
+          &.focus {
+            background: color-mix(in srgb, var(--secondary) 9%, transparent);
+          }
+        }
+
+        .highlight {
+          background: color-mix(in srgb, var(--secondary) 22%, transparent);
+          border-radius: 0;
+        }
+      }
+    }
+  }
+}
+
+// The switch's "Also search the other section" chip, added inside the search box.
+.search .search-container > .search-space > .search-scope {
+  display: inline-flex;
+  width: auto;
+  box-shadow: none;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0 0 1.5rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.6rem;
+  font-family: var(--headerFont);
+  font-size: 0.85rem;
+  color: var(--darkgray);
+  background: transparent;
+  border: 1px solid var(--lightgray);
+  border-radius: 0;
+  cursor: pointer;
+
+  &::before {
+    content: "";
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 50%;
+    background: var(--lightgray);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  &[aria-pressed="true"] {
+    border-color: var(--secondary);
+
+    &::before {
+      background: var(--phosphor);
+      box-shadow: 0 0 8px var(--phosphor-glow);
+    }
+  }
+
+  &:hover {
+    border-color: var(--brass);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--secondary);
+    outline-offset: 2px;
+  }
+}
+
+// ── Popovers and footer ──────────────────────────────────────────────────────
+
+.popover > .popover-inner {
+  border-radius: 0;
+  border: 1px solid var(--brass-soft);
+  background-color: var(--light);
+}
+
+footer {
+  border-top: 3px double color-mix(in srgb, var(--brass) 55%, transparent);
+  padding-top: 1rem;
+  font-family: var(--headerFont);
+  opacity: 1;
+
+  p,
+  a {
+    color: var(--gray);
+    font-size: 0.9rem;
+  }
+
+  a:hover {
+    color: var(--secondary);
+  }
+}
+
+// ── Keyboard focus everywhere ────────────────────────────────────────────────
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
 }
