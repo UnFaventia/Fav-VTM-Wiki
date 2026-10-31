@@ -11,7 +11,7 @@ This repo holds only the instructions for turning those two repos into a website
 
 ## How it works
 
-1. Something changes in VTM-V5 and it pings this repo (or the nightly run fires, or you press **Run workflow** on the [Actions tab](https://github.com/UnFaventia/Fav-VTM-Wiki/actions/workflows/build.yml)). WoD-Archive doesn't ping yet, so its changes arrive with the next of those.
+1. Something changes in VTM-V5, or in WoD-Archive's `australia/` folder, and that repo pings this one (or the nightly run fires, or you press **Run workflow** on the [Actions tab](https://github.com/UnFaventia/Fav-VTM-Wiki/actions/workflows/build.yml)). Each content repo sends its ping with its own `WIKI_TOKEN` secret; without one, it skips quietly and the nightly run catches up.
 2. [`build.yml`](.github/workflows/build.yml) checks out VTM-V5 and WoD-Archive's `australia/` folder using the `WIKI_TOKEN` secret, plus a pinned copy of [Quartz](https://quartz.jzhao.xyz) (the program that builds the site).
 3. [`scripts/patch_quartz.py`](scripts/patch_quartz.py) makes four small, exact edits to Quartz itself: search keeps to the section you're in, and opening a page no longer scrolls the switch off screen. If a Quartz upgrade changes the lines it edits, the build stops and says which patch to redo.
 4. [`scripts/prepare.py`](scripts/prepare.py) turns both repos into wiki pages: each `README.md` becomes its folder's page, every page gets its title and an "At a glance" box built from its frontmatter, Fav's `[[sticky notes]]` show as notes rather than broken links, and links into anything the wiki leaves out (the machinery, the PDFs, the rest of WoD-Archive) go to GitHub instead.

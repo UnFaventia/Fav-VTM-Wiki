@@ -5,18 +5,19 @@
 # No book text is ever committed here: the workflow checks both repos out into the
 # runner, builds the site, and hands it to Pages as an artifact.
 #
-# Runs when: VTM-V5 changes (its notify-wiki workflow sends a ping), this repo changes,
-# someone presses "Run workflow" on the Actions tab, and nightly as a safety net. WoD-Archive
-# doesn't ping yet, so its changes arrive with the next of those.
+# Runs when: VTM-V5 changes, or WoD-Archive's australia/ does (each repo's notify-wiki
+# workflow sends a ping), this repo changes, someone presses "Run workflow" on the Actions
+# tab, and nightly as a safety net.
 #
 # Needs the repo secret WIKI_TOKEN: a fine-grained token with Contents: read on VTM-V5 and
-# WoD-Archive (and Contents: read-and-write on this repo, so VTM-V5 can send its ping with it).
+# WoD-Archive (and Contents: read-and-write on this repo, so the two content repos can send
+# their pings with it; each holds it as its own WIKI_TOKEN secret).
 name: Build the wiki
 
 on:
   workflow_dispatch:
   repository_dispatch:
-    types: [vtm-v5-updated]
+    types: [vtm-v5-updated, wod-archive-updated]
   push:
     branches: [main]
   schedule:
