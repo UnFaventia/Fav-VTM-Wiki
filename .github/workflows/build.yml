@@ -1,19 +1,23 @@
-# Builds Fav's VTM wiki from the private VTM-V5 repo and publishes it to GitHub Pages.
+# Builds Fav's wiki from the private VTM-V5 and WoD-Archive repos and publishes it to
+# GitHub Pages: two sections, "VTM V5" (the hub) and "Australia WoD" (WoD-Archive's
+# australia/ folder), with a switch in the header (D35).
 #
-# No book text is ever committed here: the workflow checks VTM-V5 out into the runner,
-# builds the site, and hands it to Pages as an artifact.
+# No book text is ever committed here: the workflow checks both repos out into the
+# runner, builds the site, and hands it to Pages as an artifact.
 #
-# Runs when: VTM-V5 changes (its notify-wiki workflow sends a ping), this repo changes,
-# someone presses "Run workflow" on the Actions tab, and nightly as a safety net.
+# Runs when: VTM-V5 changes, or WoD-Archive's australia/ does (each repo's notify-wiki
+# workflow sends a ping), this repo changes, someone presses "Run workflow" on the Actions
+# tab, and nightly as a safety net.
 #
-# Needs the repo secret WIKI_TOKEN: a fine-grained token with Contents: read on VTM-V5
-# (and Contents: read-and-write on this repo, so VTM-V5 can send its ping with it).
+# Needs the repo secret WIKI_TOKEN: a fine-grained token with Contents: read on VTM-V5 and
+# WoD-Archive (and Contents: read-and-write on this repo, so the two content repos can send
+# their pings with it; each holds it as its own WIKI_TOKEN secret).
 name: Build the wiki
 
 on:
   workflow_dispatch:
   repository_dispatch:
-    types: [vtm-v5-updated]
+    types: [vtm-v5-updated, wod-archive-updated]
   push:
     branches: [main]
   schedule:
@@ -56,6 +60,16 @@ jobs:
           token: ${{ secrets.WIKI_TOKEN }}
           path: vtm-v5
 
+      - name: Get WoD-Archive (the Australia section)
+        uses: actions/checkout@v4
+        with:
+          repository: UnFaventia/WoD-Archive
+          token: ${{ secrets.WIKI_TOKEN }}
+          path: wod-archive
+          # The PDFs stay in the repo; the build only reads australia/'s markdown.
+          sparse-checkout: australia
+          sparse-checkout-cone-mode: true
+
       - name: Get Quartz
         run: git clone --depth 1 --branch "$QUARTZ_VERSION" https://github.com/jackyzha0/quartz.git quartz
 
@@ -74,18 +88,21 @@ jobs:
           npm ci --prefix quartz --no-audit --no-fund
           pip install --quiet pyyaml
 
-      - name: Turn the hub into wiki pages
+      - name: Turn the hub and the Australia board into wiki pages
         run: |
           cp -r recipe/quartz-overrides/. quartz/
-          python3 recipe/scripts/prepare.py vtm-v5 quartz/content
+          python3 recipe/scripts/patch_quartz.py quartz
+          python3 recipe/scripts/prepare.py vtm-v5 quartz/content --wod wod-archive
 
       - name: Build
         working-directory: quartz
         run: npx quartz build
 
-      - name: Keep search engines out; add the home-screen icon and phone toolbar colour
+      - name: Keep search engines out; add the home-screen icon, phone toolbar colour and title font
+        # Limelight, the page-title face, is loaded whole here: Quartz only loads the
+        # wordmark's letters of its title font.
         run: |
-          find quartz/public -name '*.html' -exec sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow, noarchive"><link rel="apple-touch-icon" href="/Fav-VTM-Wiki/static/icon.png"><meta name="theme-color" content="#141113">|' {} +
+          find quartz/public -name '*.html' -exec sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow, noarchive"><link rel="apple-touch-icon" href="/Fav-VTM-Wiki/static/icon.png"><meta name="theme-color" content="#110f0c"><link spa-preserve rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Limelight\&display=swap">|' {} +
           touch quartz/public/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3

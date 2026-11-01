@@ -18,33 +18,40 @@ const config: QuartzConfig = {
     theme: {
       fontOrigin: "googleFonts",
       cdnCaching: true,
+      // Art deco × retro SchreckNet (Fav, 2026-10-31). Limelight is the deco marquee
+      // (the wordmark here; page titles load it in custom.scss), Jost the period
+      // geometric sans for headings and the sidebar, Literata the long-reading body, and
+      // VT323 the terminal: the switch's readout, the search prompt and code.
       typography: {
-        header: "Cinzel",
-        body: "Source Sans Pro",
-        code: "IBM Plex Mono",
+        title: "Limelight",
+        header: { name: "Jost", weights: [400, 500, 600] },
+        body: "Literata",
+        code: { name: "VT323", weights: [400] },
       },
+      // The base is VTM V5's: blood-red phosphor on onyx and brass. custom.scss swaps
+      // the accent to green for Australia WoD (green and gold).
       colors: {
         lightMode: {
-          light: "#faf7f5",
-          lightgray: "#e6dfdc",
-          gray: "#b0a4a2",
-          darkgray: "#3f3838",
-          dark: "#231d1d",
-          secondary: "#8b1e2d",
-          tertiary: "#b4656f",
-          highlight: "rgba(139, 30, 45, 0.08)",
-          textHighlight: "#f5d0d688",
+          light: "#f2ede1",
+          lightgray: "#d4c9b1",
+          gray: "#665c4b",
+          darkgray: "#1d1913",
+          dark: "#0f0d0a",
+          secondary: "#9e1b2c",
+          tertiary: "#835f1c",
+          highlight: "rgba(158, 27, 44, 0.07)",
+          textHighlight: "#d2ac6255",
         },
         darkMode: {
-          light: "#141113",
-          lightgray: "#36292d",
-          gray: "#6e5f63",
-          darkgray: "#ddd3d4",
-          dark: "#f2eaea",
-          secondary: "#e0566a",
-          tertiary: "#c9a24a",
-          highlight: "rgba(224, 86, 106, 0.12)",
-          textHighlight: "#8b1e2d88",
+          light: "#110f0c",
+          lightgray: "#3b342a",
+          gray: "#958a76",
+          darkgray: "#ece3cf",
+          dark: "#f6efdf",
+          secondary: "#f2585c",
+          tertiary: "#d2ac62",
+          highlight: "rgba(242, 88, 92, 0.1)",
+          textHighlight: "#d2ac6244",
         },
       },
     },
